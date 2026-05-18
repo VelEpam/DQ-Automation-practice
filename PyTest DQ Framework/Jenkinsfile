@@ -12,33 +12,37 @@ pipeline {
     stages {
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    python3 -m venv venv
-                    venv/bin/pip install -r requirements.txt
-                '''
+                dir('PyTest DQ Framework') {
+                    sh '''
+                        python3 -m venv venv
+                        venv/bin/pip install -r requirements.txt
+                    '''
+                }
             }
         }
 
         stage('Run DQ Tests') {
             steps {
-                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'postgres-db-credentials',
-                        usernameVariable: 'DB_CRED_USER',
-                        passwordVariable: 'DB_CRED_PSW'
-                    )]) {
-                        sh """
-                            venv/bin/pytest "tests/dq checks/" \\
-                                --db_host=${params.DB_HOST} \
-                                --db_port=${params.DB_PORT} \
-                                --db_name=${params.DB_NAME} \
-                                --db_user=${params.DB_USER} \
-                                --db_password=\$DB_CRED_PSW \
-                                --parquet_base_path=${params.PARQUET_BASE_PATH} \
-                                --html=report.html \
-                                --self-contained-html \
-                                -v
-                        """
+                dir('PyTest DQ Framework') {
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                        withCredentials([usernamePassword(
+                            credentialsId: 'postgres-db-credentials',
+                            usernameVariable: 'DB_CRED_USER',
+                            passwordVariable: 'DB_CRED_PSW'
+                        )]) {
+                            sh """
+                                venv/bin/pytest "tests/dq checks/" \
+                                    --db_host=${params.DB_HOST} \
+                                    --db_port=${params.DB_PORT} \
+                                    --db_name=${params.DB_NAME} \
+                                    --db_user=${params.DB_USER} \
+                                    --db_password=\$DB_CRED_PSW \
+                                    --parquet_base_path=${params.PARQUET_BASE_PATH} \
+                                    --html=report.html \
+                                    --self-contained-html \
+                                    -v
+                            """
+                        }
                     }
                 }
             }
@@ -46,13 +50,13 @@ pipeline {
 
         stage('Publish Report') {
             steps {
-                archiveArtifacts artifacts: 'report.html', fingerprint: true, allowEmptyArchive: true
+                archiveArtifacts artifacts: 'PyTest DQ Framework/report.html', fingerprint: true, allowEmptyArchive: true
 
                 publishHTML([
                     allowMissing:          true,
                     alwaysLinkToLastBuild: true,
                     keepAll:               true,
-                    reportDir:             '.',
+                    reportDir:             'PyTest DQ Framework',
                     reportFiles:           'report.html',
                     reportName:            'DQ Test Report'
                 ])
