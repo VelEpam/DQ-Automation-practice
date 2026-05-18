@@ -9,10 +9,6 @@ pipeline {
         string(name: 'PARQUET_BASE_PATH', defaultValue: '/parquet_data', description: 'Base path for parquet files')
     }
 
-    environment {
-        DB_CREDENTIALS = credentials('postgres-db-credentials')
-    }
-
     stages {
         stage('Install Dependencies') {
             steps {
@@ -23,18 +19,24 @@ pipeline {
         stage('Run DQ Tests') {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                    sh """
-                        pytest "tests/dq checks/" \
-                            --db_host=${params.DB_HOST} \
-                            --db_port=${params.DB_PORT} \
-                            --db_name=${params.DB_NAME} \
-                            --db_user=${params.DB_USER} \
-                            --db_password=\${DB_CREDENTIALS_PSW} \
-                            --parquet_base_path=${params.PARQUET_BASE_PATH} \
-                            --html=report.html \
-                            --self-contained-html \
-                            -v
-                    """
+                    withCredentials([usernamePassword(
+                        credentialsId: 'postgres-db-credentials',
+                        usernameVariable: 'DB_CRED_USER',
+                        passwordVariable: 'DB_CRED_PSW'
+                    )]) {
+                        sh """
+                            pytest "tests/dq checks/" \
+                                --db_host=${params.DB_HOST} \
+                                --db_port=${params.DB_PORT} \
+                                --db_name=${params.DB_NAME} \
+                                --db_user=${params.DB_USER} \
+                                --db_password=\$DB_CRED_PSW \
+                                --parquet_base_path=${params.PARQUET_BASE_PATH} \
+                                --html=report.html \
+                                --self-contained-html \
+                                -v
+                        """
+                    }
                 }
             }
         }
