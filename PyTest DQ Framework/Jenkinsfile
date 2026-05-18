@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'DB_HOST',           defaultValue: 'postgres',      description: 'PostgreSQL host')
+        string(name: 'DB_PORT',           defaultValue: '5432',          description: 'PostgreSQL port')
+        string(name: 'DB_NAME',           defaultValue: 'mydatabase',    description: 'PostgreSQL database name')
+        string(name: 'DB_USER',           defaultValue: 'myuser',        description: 'PostgreSQL user')
+        string(name: 'PARQUET_BASE_PATH', defaultValue: '/parquet_data', description: 'Base path for parquet files')
+    }
+
+    environment {
+        DB_CREDENTIALS = credentials('postgres-db-credentials')
+    }
+
+    stages {
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Run DQ Tests') {
+            steps {
+                sh """
+                    pytest "tests/dq checks/" \
+                        --db_host=${params.DB_HOST} \
+                        --db_port=${params.DB_PORT} \
+                        --db_name=${params.DB_NAME} \
+                        --db_user=${params.DB_USER} \
+                        --db_password=\${DB_CREDENTIALS_PSW} \
+                        --parquet_base_path=${params.PARQUET_BASE_PATH} \
+                        --html=report.html \
+                        --self-contained-html \
+                        -v
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'report.html', fingerprint: true
+
+            publishHTML([
+                allowMissing:         false,
+                alwaysLinkToLastBuild: true,
+                keepAll:              true,
+                reportDir:            '.',
+                reportFiles:          'report.html',
+                reportName:           'DQ Test Report'
+            ])
+        }
+
+        failure {
+            echo 'One or more DQ checks failed. Review report.html for details.'
+        }
+
+        success {
+            echo 'All DQ checks passed successfully.'
+        }
+    }
+}

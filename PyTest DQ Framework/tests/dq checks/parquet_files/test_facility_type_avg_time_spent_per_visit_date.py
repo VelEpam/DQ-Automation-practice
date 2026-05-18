@@ -1,7 +1,7 @@
 """
-Description: Data Quality checks for the facility_name_min_time_spent_per_visit_date parquet dataset.
-             Validates that the parquet output correctly reflects the minimum time spent per
-             facility name and visit date, as derived from the Postgres source tables.
+Description: Data Quality checks for the facility_type_avg_time_spent_per_visit_date parquet dataset.
+             Validates that the parquet output correctly reflects the average time spent per
+             facility type and visit date, as derived from the Postgres source tables.
 Requirement(s): TICKET-1234
 Author(s): Name Surname
 """
@@ -12,22 +12,22 @@ import pandas as pd
 
 SOURCE_QUERY = """
 SELECT
-    f.facility_name,
+    f.facility_type,
     v.visit_timestamp::date AS visit_date,
-    MIN(v.duration_minutes) AS min_time_spent
+    ROUND(AVG(v.duration_minutes), 2) AS avg_time_spent
 FROM
     visits v
 JOIN
     facilities f
     ON f.id = v.facility_id
 GROUP BY
-    f.facility_name,
+    f.facility_type,
     v.visit_timestamp::date
 """
 
-PARQUET_DATASET = "facility_name_min_time_spent_per_visit_date"
-KEY_COLUMNS = ["facility_name", "visit_date"]
-DATA_COLUMNS = ["facility_name", "visit_date", "min_time_spent"]
+PARQUET_DATASET = "facility_type_avg_time_spent_per_visit_date"
+KEY_COLUMNS = ["facility_type", "visit_date"]
+DATA_COLUMNS = ["facility_type", "visit_date", "avg_time_spent"]
 
 
 @pytest.fixture(scope='module')
@@ -41,27 +41,27 @@ def target_data(parquet_reader, parquet_base_path):
     return parquet_reader.process(target_path)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.facility_type_avg_time_spent
 def test_check_dataset_is_not_empty(target_data, data_quality_library):
     data_quality_library.check_dataset_is_not_empty(target_data)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.facility_type_avg_time_spent
 def test_check_count(source_data, target_data, data_quality_library):
     data_quality_library.check_count(source_data, target_data)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.facility_type_avg_time_spent
 def test_check_no_duplicates(target_data, data_quality_library):
     data_quality_library.check_duplicates(target_data, column_names=KEY_COLUMNS)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.facility_type_avg_time_spent
 def test_check_not_null_values(target_data, data_quality_library):
     data_quality_library.check_not_null_values(target_data, column_names=DATA_COLUMNS)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.facility_type_avg_time_spent
 def test_check_full_data_set(source_data, target_data, data_quality_library):
     source = source_data.copy()
     target = target_data[DATA_COLUMNS].copy()

@@ -1,33 +1,35 @@
 """
-Description: Data Quality checks for the facility_name_min_time_spent_per_visit_date parquet dataset.
-             Validates that the parquet output correctly reflects the minimum time spent per
-             facility name and visit date, as derived from the Postgres source tables.
+Description: Data Quality checks for the patient_sum_treatment_cost_per_facility_type parquet dataset.
+             Validates that the parquet output correctly reflects the sum of treatment costs per
+             patient full name and facility type, as derived from the Postgres source tables.
 Requirement(s): TICKET-1234
 Author(s): Name Surname
 """
 
 import pytest
-import pandas as pd
 
 
 SOURCE_QUERY = """
 SELECT
-    f.facility_name,
-    v.visit_timestamp::date AS visit_date,
-    MIN(v.duration_minutes) AS min_time_spent
+    f.facility_type,
+    CONCAT(p.first_name, ' ', p.last_name) AS full_name,
+    SUM(v.treatment_cost) AS sum_treatment_cost
 FROM
     visits v
 JOIN
     facilities f
     ON f.id = v.facility_id
+JOIN
+    patients p
+    ON p.id = v.patient_id
 GROUP BY
-    f.facility_name,
-    v.visit_timestamp::date
+    f.facility_type,
+    full_name
 """
 
-PARQUET_DATASET = "facility_name_min_time_spent_per_visit_date"
-KEY_COLUMNS = ["facility_name", "visit_date"]
-DATA_COLUMNS = ["facility_name", "visit_date", "min_time_spent"]
+PARQUET_DATASET = "patient_sum_treatment_cost_per_facility_type"
+KEY_COLUMNS = ["facility_type", "full_name"]
+DATA_COLUMNS = ["facility_type", "full_name", "sum_treatment_cost"]
 
 
 @pytest.fixture(scope='module')
@@ -41,37 +43,31 @@ def target_data(parquet_reader, parquet_base_path):
     return parquet_reader.process(target_path)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.patient_sum_treatment_cost
 def test_check_dataset_is_not_empty(target_data, data_quality_library):
     data_quality_library.check_dataset_is_not_empty(target_data)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.patient_sum_treatment_cost
 def test_check_count(source_data, target_data, data_quality_library):
     data_quality_library.check_count(source_data, target_data)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.patient_sum_treatment_cost
 def test_check_no_duplicates(target_data, data_quality_library):
     data_quality_library.check_duplicates(target_data, column_names=KEY_COLUMNS)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.patient_sum_treatment_cost
 def test_check_not_null_values(target_data, data_quality_library):
     data_quality_library.check_not_null_values(target_data, column_names=DATA_COLUMNS)
 
 
-@pytest.mark.facility_name_min_time_spent
+@pytest.mark.patient_sum_treatment_cost
 def test_check_full_data_set(source_data, target_data, data_quality_library):
-    source = source_data.copy()
-    target = target_data[DATA_COLUMNS].copy()
-
-    source["visit_date"] = pd.to_datetime(source["visit_date"]).dt.normalize()
-    target["visit_date"] = pd.to_datetime(target["visit_date"]).dt.normalize()
-
     data_quality_library.check_full_data_set(
-        source,
-        target,
+        source_data,
+        target_data[DATA_COLUMNS],
         columns=DATA_COLUMNS,
         sort_columns=KEY_COLUMNS
     )

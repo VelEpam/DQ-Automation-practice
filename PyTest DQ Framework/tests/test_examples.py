@@ -31,3 +31,4 @@ def test_check_dataset_is_not_empty(target_data, data_quality_library):
 @pytest.mark.example
 def test_check_count(source_data, target_data, data_quality_library):
     data_quality_library.check_count(source_data, target_data)
+
