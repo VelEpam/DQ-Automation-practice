@@ -22,36 +22,40 @@ pipeline {
 
         stage('Run DQ Tests') {
             steps {
-                sh """
-                    pytest "tests/dq checks/" \
-                        --db_host=${params.DB_HOST} \
-                        --db_port=${params.DB_PORT} \
-                        --db_name=${params.DB_NAME} \
-                        --db_user=${params.DB_USER} \
-                        --db_password=\${DB_CREDENTIALS_PSW} \
-                        --parquet_base_path=${params.PARQUET_BASE_PATH} \
-                        --html=report.html \
-                        --self-contained-html \
-                        -v
-                """
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    sh """
+                        pytest "tests/dq checks/" \
+                            --db_host=${params.DB_HOST} \
+                            --db_port=${params.DB_PORT} \
+                            --db_name=${params.DB_NAME} \
+                            --db_user=${params.DB_USER} \
+                            --db_password=\${DB_CREDENTIALS_PSW} \
+                            --parquet_base_path=${params.PARQUET_BASE_PATH} \
+                            --html=report.html \
+                            --self-contained-html \
+                            -v
+                    """
+                }
+            }
+        }
+
+        stage('Publish Report') {
+            steps {
+                archiveArtifacts artifacts: 'report.html', fingerprint: true, allowEmptyArchive: true
+
+                publishHTML([
+                    allowMissing:          true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll:               true,
+                    reportDir:             '.',
+                    reportFiles:           'report.html',
+                    reportName:            'DQ Test Report'
+                ])
             }
         }
     }
 
     post {
-        always {
-            archiveArtifacts artifacts: 'report.html', fingerprint: true
-
-            publishHTML([
-                allowMissing:         false,
-                alwaysLinkToLastBuild: true,
-                keepAll:              true,
-                reportDir:            '.',
-                reportFiles:          'report.html',
-                reportName:           'DQ Test Report'
-            ])
-        }
-
         failure {
             echo 'One or more DQ checks failed. Review report.html for details.'
         }
