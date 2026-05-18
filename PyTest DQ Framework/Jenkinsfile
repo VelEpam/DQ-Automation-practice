@@ -51,15 +51,6 @@ pipeline {
         stage('Publish Report') {
             steps {
                 archiveArtifacts artifacts: 'PyTest DQ Framework/report.html', fingerprint: true, allowEmptyArchive: true
-
-                publishHTML([
-                    allowMissing:          true,
-                    alwaysLinkToLastBuild: true,
-                    keepAll:               true,
-                    reportDir:             'PyTest DQ Framework',
-                    reportFiles:           'report.html',
-                    reportName:            'DQ Test Report'
-                ])
             }
         }
     }
