@@ -12,7 +12,10 @@ pipeline {
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv venv
+                    venv/bin/pip install -r requirements.txt
+                '''
             }
         }
 
@@ -25,7 +28,7 @@ pipeline {
                         passwordVariable: 'DB_CRED_PSW'
                     )]) {
                         sh """
-                            pytest "tests/dq checks/" \
+                            venv/bin/pytest "tests/dq checks/" \\
                                 --db_host=${params.DB_HOST} \
                                 --db_port=${params.DB_PORT} \
                                 --db_name=${params.DB_NAME} \
