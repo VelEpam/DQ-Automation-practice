@@ -31,6 +31,11 @@ pipeline {
                             passwordVariable: 'DB_CRED_PSW'
                         )]) {
                             sh """
+                                echo '=== DEBUG: workspace ==='
+                                pwd
+                                echo '=== DEBUG: listing PyTest DQ Framework ==='
+                                ls -la
+                                echo '=== DEBUG: using DB host=${params.DB_HOST}, user=${params.DB_USER} ==='
                                 venv/bin/pytest "tests/dq checks/" \
                                     --db_host=${params.DB_HOST} \
                                     --db_port=${params.DB_PORT} \
