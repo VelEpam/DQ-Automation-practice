@@ -1,10 +1,3 @@
-"""
-Description: Data Quality checks for the facility_name_min_time_spent_per_visit_date parquet dataset.
-             Validates that the parquet output correctly reflects the minimum time spent per
-             facility name and visit date, as derived from the Postgres source tables.
-Requirement(s): TICKET-1234
-Author(s): Name Surname
-"""
 
 import pytest
 import pandas as pd

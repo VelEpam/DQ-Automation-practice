@@ -1,11 +1,3 @@
-"""
-Description: Data Quality checks for the patient_sum_treatment_cost_per_facility_type parquet dataset.
-             Validates that the parquet output correctly reflects the sum of treatment costs per
-             patient full name and facility type, as derived from the Postgres source tables.
-Requirement(s): TICKET-1234
-Author(s): Name Surname
-"""
-
 import pytest
 
 
