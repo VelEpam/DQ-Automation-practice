@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.12.10 on win32)" generated="2026-06-04T06:55:40.900809" rpa="false" schemaversion="5">
+<suite id="s1" name="Test" source="C:\Users\ThanigaivelSekar\Git_Hub_DQ_Automation\DQ-Automation-practice\Robot Framework\test.robot">
+<test id="s1-t1" name="Validate HTML Report Against Parquet" line="16">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-06-04T06:55:42.047282" level="INFO">${options} = &lt;selenium.webdriver.chrome.options.Options object at 0x0000023479855250&gt;</msg>
+<var>${options}</var>
+<arg>sys.modules['selenium.webdriver'].ChromeOptions()</arg>
+<arg>sys, selenium.webdriver</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-06-04T06:55:42.047282" elapsed="0.000000"/>
+</kw>
+<kw name="Call Method" owner="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--allow-file-access-from-files</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" start="2026-06-04T06:55:42.047282" elapsed="0.000000"/>
+</kw>
+<kw name="Call Method" owner="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--disable-web-security</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" start="2026-06-04T06:55:42.047282" elapsed="0.004973"/>
+</kw>
+<kw name="Create Webdriver" owner="SeleniumLibrary">
+<msg time="2026-06-04T06:55:42.055726" level="INFO">Creating an instance of the Chrome WebDriver.</msg>
+<arg>Chrome</arg>
+<arg>options=${options}</arg>
+<doc>Creates an instance of Selenium WebDriver.</doc>
+<status status="PASS" start="2026-06-04T06:55:42.052255" elapsed="1.760355"/>
+</kw>
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-06-04T06:55:43.812959" level="INFO">Opening url 'file:///C:/Users/ThanigaivelSekar/Desktop/Learning/DEQ Automation/Robotic_Framework/report.html'</msg>
+<arg>file:///${REPORT_FILE}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-06-04T06:55:43.812959" elapsed="1.346504"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2026-06-04T06:55:48.160922" level="INFO">Slept 3 seconds.</msg>
+<arg>3s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2026-06-04T06:55:45.160475" elapsed="3.000447"/>
+</kw>
+<kw name="Wait Until Page Contains" owner="SeleniumLibrary">
+<arg>plotly.js v3.0.1</arg>
+<arg>timeout=60s</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.161838" elapsed="0.063052"/>
+</kw>
+<kw name="Wait Until Keyword Succeeds" owner="BuiltIn">
+<kw name="Execute Javascript" owner="SeleniumLibrary">
+<msg time="2026-06-04T06:55:48.226430" level="INFO">Executing JavaScript:
+return document.getElementsByTagName('svg').length &gt; 0
+Without any arguments.</msg>
+<arg>return document.getElementsByTagName('svg').length &gt; 0</arg>
+<doc>Executes the given JavaScript code with possible arguments.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.226430" elapsed="0.007971"/>
+</kw>
+<arg>12 times</arg>
+<arg>5s</arg>
+<arg>Execute Javascript</arg>
+<arg>return document.getElementsByTagName('svg').length &gt; 0</arg>
+<doc>Runs the specified keyword and retries if it fails.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.224890" elapsed="0.009511"/>
+</kw>
+<kw name="Get Source" owner="SeleniumLibrary">
+<msg time="2026-06-04T06:55:48.655384" level="INFO">${html} = &lt;html&gt;&lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;style id="plotly.js-style-global"&gt;&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;div&gt;                        &lt;script type="text/javascript"&gt;window.PlotlyConfig = {MathJaxConfig: 'local...</msg>
+<var>${html}</var>
+<doc>Returns the entire HTML source of the current page or frame.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.238831" elapsed="0.416553"/>
+</kw>
+<kw name="Extract Html Table Data" owner="helper">
+<msg time="2026-06-04T06:55:48.770939" level="INFO">${df_html} =        Facility Type  Visit Date Average Time Spent
+0   Specialty Center  2026-03-27               37.5
+1           Hospital  2026-03-27              34.67
+2             Clinic  2026-03-27            ...</msg>
+<var>${df_html}</var>
+<arg>${html}</arg>
+<doc>Extracts HTML table data from the browser source or falls back to SVG extraction.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.657397" elapsed="0.113542"/>
+</kw>
+<kw name="Read Filtered Parquet" owner="helper">
+<msg time="2026-06-04T06:55:48.838485" level="INFO">${df_parquet} =         facility_type visit_date  avg_time_spent
+1              Clinic 2026-03-27           54.00
+5    Specialty Center 2026-03-27           37.50
+51           Hospital 2026-03-27           34.67
+88  ...</msg>
+<var>${df_parquet}</var>
+<arg>${PARQUET_FOLDER}</arg>
+<arg>${FILTER_DATE}</arg>
+<doc>Reads Parquet files from a folder and applies optional date filtering.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.772947" elapsed="0.066149"/>
+</kw>
+<kw name="Compare Dataframes" owner="helper">
+<msg time="2026-06-04T06:55:48.850577" level="INFO">${matches} = False</msg>
+<msg time="2026-06-04T06:55:48.850577" level="INFO">${diffs} = Shape mismatch: report=(3, 3), parquet=(6, 3)
+
+Rows in report not in parquet:
+   Facility Type Visit Date Average Time Spent facility_type visit_date  avg_time_spent
+Specialty Center 2026-03-27       ...</msg>
+<var>${matches}</var>
+<var>${diffs}</var>
+<arg>${df_html}</arg>
+<arg>${df_parquet}</arg>
+<arg>${FILTER_DATE}</arg>
+<doc>Compares two DataFrames and returns a match boolean plus diff string.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.839601" elapsed="0.010976"/>
+</kw>
+<kw name="Run Keyword If" owner="BuiltIn">
+<kw name="Fail" owner="BuiltIn">
+<msg time="2026-06-04T06:55:48.852331" level="FAIL">Dataframes mismatch:
+Shape mismatch: report=(3, 3), parquet=(6, 3)
+
+Rows in report not in parquet:
+   Facility Type Visit Date Average Time Spent facility_type visit_date  avg_time_spent
+Specialty Center 2026-03-27               37.5           NaN        NaT             NaN
+        Hospital 2026-03-27              34.67           NaN        NaT             NaN
+          Clinic 2026-03-27                 54           NaN        NaT             NaN
+
+DataFrame are different
+
+DataFrame shape mismatch
+[left]:  (3, 3)
+[right]: (6, 3)</msg>
+<arg>Dataframes mismatch:\n${diffs}</arg>
+<doc>Fails the test with the given message and optionally alters its tags.</doc>
+<status status="FAIL" start="2026-06-04T06:55:48.852331" elapsed="0.000000">Dataframes mismatch:
+Shape mismatch: report=(3, 3), parquet=(6, 3)
+
+Rows in report not in parquet:
+   Facility Type Visit Date Average Time Spent facility_type visit_date  avg_time_spent
+Specialty Center 2026-03-27               37.5           NaN        NaT             NaN
+        Hospital 2026-03-27              34.67           NaN        NaT             NaN
+          Clinic 2026-03-27                 54           NaN        NaT             NaN
+
+DataFrame are different
+
+DataFrame shape mismatch
+[left]:  (3, 3)
+[right]: (6, 3)</status>
+</kw>
+<arg>not ${matches}</arg>
+<arg>Fail</arg>
+<arg>Dataframes mismatch:\n${diffs}</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="FAIL" start="2026-06-04T06:55:48.850577" elapsed="0.001754">Dataframes mismatch:
+Shape mismatch: report=(3, 3), parquet=(6, 3)
+
+Rows in report not in parquet:
+   Facility Type Visit Date Average Time Spent facility_type visit_date  avg_time_spent
+Specialty Center 2026-03-27               37.5           NaN        NaT             NaN
+        Hospital 2026-03-27              34.67           NaN        NaT             NaN
+          Clinic 2026-03-27                 54           NaN        NaT             NaN
+
+DataFrame are different
+
+DataFrame shape mismatch
+[left]:  (3, 3)
+[right]: (6, 3)</status>
+</kw>
+<status status="FAIL" start="2026-06-04T06:55:42.045841" elapsed="6.808505">Dataframes mismatch:
+Shape mismatch: report=(3, 3), parquet=(6, 3)
+
+Rows in report not in parquet:
+   Facility Type Visit Date Average Time Spent facility_type visit_date  avg_time_spent
+Specialty Center 2026-03-27               37.5           NaN        NaT             NaN
+        Hospital 2026-03-27              34.67           NaN        NaT             NaN
+          Clinic 2026-03-27                 54           NaN        NaT             NaN
+
+DataFrame are different
+
+DataFrame shape mismatch
+[left]:  (3, 3)
+[right]: (6, 3)</status>
+</test>
+<kw name="Close Browser" owner="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-06-04T06:55:48.856362" elapsed="2.303205"/>
+</kw>
+<status status="FAIL" start="2026-06-04T06:55:40.900809" elapsed="10.258758"/>
+</suite>
+<statistics>
+<total>
+<stat pass="0" fail="1" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Test" id="s1" pass="0" fail="1" skip="0">Test</stat>
+</suite>
+</statistics>
+<errors>
+<msg time="2026-06-04T06:55:40.895565" level="ERROR">Error in file 'C:\Users\ThanigaivelSekar\Git_Hub_DQ_Automation\DQ-Automation-practice\Robot Framework\test.robot' on line 4: Non-existing setting 'Output'.</msg>
+<msg time="2026-06-04T06:55:40.895565" level="ERROR">Error in file 'C:\Users\ThanigaivelSekar\Git_Hub_DQ_Automation\DQ-Automation-practice\Robot Framework\test.robot' on line 5: Non-existing setting 'Log'.</msg>
+<msg time="2026-06-04T06:55:40.895565" level="ERROR">Error in file 'C:\Users\ThanigaivelSekar\Git_Hub_DQ_Automation\DQ-Automation-practice\Robot Framework\test.robot' on line 6: Non-existing setting 'Report'.</msg>
+</errors>
+</robot>
